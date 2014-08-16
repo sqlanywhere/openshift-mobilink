@@ -1,0 +1,66 @@
+#!/bin/bash
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+env_dir="${OPENSHIFT_ML_DIR}/env"
+
+function check_license {
+# Display License File
+client_result "======= SAP License ========="
+while read -r line; do client_result "$line"; done < $OPENSHIFT_ML_DIR/license/license.txt
+client_result "==== End of SAP License ====="
+client_result ""
+client_result "======= MUST READ ==========="
+client_result "You haven't accepted the license agreement,"
+client_result "thus the use of the cartridge is prohibited."
+client_result ""
+client_result "To indicate that you have read and accepted this license, "
+client_result "please set the OPENSHIFT_ML_ACCEPT_SAP_LICENSE variable to "Y" with command:"
+client_result ""
+client_result "  rhc set-env OPENSHIFT_ML_ACCEPT_SAP_LICENSE=Y --app ${OPENSHIFT_APP_NAME}"
+client_result ""
+client_result "then start the cartridge with command:"
+client_result ""
+client_result "  rhc cartridge-start mobilink --app ${OPENSHIFT_APP_NAME}"
+client_result ""
+client_result "============================="
+return 0
+}
+
+function start {
+if [ ${OPENSHIFT_ML_ACCEPT_SAP_LICENSE} == Y ] || [ ${OPENSHIFT_ML_ACCEPT_SAP_LICENSE} == y ]; then
+  $OPENSHIFT_ML_DIR/versions/16.0/mobilink/mlsrv16 -c "Driver=${OPENSHIFT_ML_DIR}/versions/16.0/mysql-connector-odbc-5.1.6-linux-glibc2.3-x86-64bit/lib/libmyodbc5.so;Server=${OPENSHIFT_MYSQL_DB_HOST};Database=${OPENSHIFT_ML_DB_NAME};uid=${OPENSHIFT_ML_USERNAME};pwd=${OPENSHIFT_ML_PASSWORD}" -ud -zs $OPENSHIFT_APP_NAME -x http{host=$OPENSHIFT_ML_HOST\;port=$OPENSHIFT_ML_PORT} -o $OPENSHIFT_LOG_DIR/ml.log -zf -zu+
+else
+  if [ ${OPENSHIFT_ML_FIRST_RUN} == Y ]; then
+    OPENSHIFT_ML_FIRST_RUN="N"
+    set_env_var 'OPENSHIFT_ML_FIRST_RUN' ${OPENSHIFT_ML_FIRST_RUN} $env_dir
+    client_result ""
+    client_result "   +---------------------------------------------------+"
+    client_result "   |  THE MOBILINK SERVER HAS *NOT* BEEN STARTED YET!  |"  
+    client_result "   +---------------------------------------------------+"
+    client_result ""
+    client_result "Before the MobiLink Server can be started, you must view and accept the End User License Agreement"
+    client_result ""
+    client_result "Please read the license agreement and instruction on accepting:"
+    client_result "   rhc cartridge-start mobilink --app ${OPENSHIFT_APP_NAME} | more"
+  else  
+    check_license
+  fi
+fi
+}
+
+function stop {
+  $OPENSHIFT_ML_DIR/versions/16.0/mobilink/mlstop $OPENSHIFT_APP_NAME
+}
+
+case "$1" in
+  start)
+    start
+  ;;
+  stop)
+    stop
+  ;;
+  *)
+    echo 0
+  ;;
+esac

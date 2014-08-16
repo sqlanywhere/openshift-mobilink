@@ -1,0 +1,44 @@
+Name: mobilink
+Display-Name: MobiLink 16.0 
+Cartridge-Short-Name: ML
+Cartridge-Version: '0.0.1'
+Compatible-Versions:
+  - '0.0.1'
+Cartridge-Vendor: sap
+Description: "Synchronization between MySQL and remote databases using SAP SQL Anywhere"
+Version: '16.0'
+Versions:
+  - '16.0'
+Source-Url: git://github.com/efarrar/openshift-cartridge-sap-ml.git
+License: SAP Software License
+Vendor: SAP SE
+Categories:
+  - service
+  - embedded
+Website: http://www.sap.com
+Provides:
+  - mobilink-16 
+  - "mobilink"
+Requires:
+  - mysql-5.5
+Cart-Data:
+  - Key: username
+    Type: cart_data
+    Description: "MobiLink User"
+  - Key: password
+    Type: cart_data
+    Description: "Password for MobiLink User"
+  - Key: database_name
+    Type: cart_data
+    Description: "MobiLink Database Name"
+  - Key: mobilink_url
+    Type: cart_data
+    Description: "URL for MobiLink Server"  
+Endpoints:
+  - Private-IP-Name:   HOST
+    Private-Port-Name: PORT
+    Private-Port:      8080
+    Public-Port-Name:  PROXY_PORT
+    Mappings:
+      - Frontend:      "/mobilink"
+        Backend:       "/"

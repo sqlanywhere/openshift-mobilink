@@ -1,0 +1,46 @@
+#!/bin/bash -e
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+mkdir -p $OPENSHIFT_ML_DIR/versions/16.0/
+wget -P $OPENSHIFT_TMP_DIR http://downloads.mysql.com/archives/get/file/mysql-connector-odbc-5.1.6-linux-glibc2.3-x86-64bit.tar.gz
+tar -xf $OPENSHIFT_TMP_DIR/mysql-connector-odbc-5.1.6-linux-glibc2.3-x86-64bit.tar.gz -C "${OPENSHIFT_ML_DIR}/versions/16.0/"
+
+mkdir -p $OPENSHIFT_ML_DIR/versions/16.0/mobilink/
+wget -P $OPENSHIFT_TMP_DIR https://s3-us-west-2.amazonaws.com/efarrar-ml-testing-temp/openshift-mobilink.tar.gz
+tar -xf $OPENSHIFT_TMP_DIR/openshift-mobilink.tar.gz -C "${OPENSHIFT_ML_DIR}/versions/16.0/mobilink"
+
+ln -s $OPENSHIFT_ML_DIR/versions/16.0/mobilink/libodbcinst.so $OPENSHIFT_ML_DIR/versions/16.0/mobilink/libodbcinst.so.1
+
+OPENSHIFT_ML_DB_NAME=mobilink
+OPENSHIFT_ML_USERNAME=$(generate_username)
+OPENSHIFT_ML_PASSWORD=$(generate_password)
+OPENSHIFT_ML_FIRST_RUN="Y"
+
+env_dir="${OPENSHIFT_ML_DIR}/env"
+
+set_env_var 'OPENSHIFT_ML_DB_NAME' ${OPENSHIFT_ML_DB_NAME} $env_dir
+set_env_var 'OPENSHIFT_ML_USERNAME' ${OPENSHIFT_ML_USERNAME} $env_dir
+set_env_var 'OPENSHIFT_ML_PASSWORD' ${OPENSHIFT_ML_PASSWORD} $env_dir
+set_env_var 'OPENSHIFT_ML_FIRST_RUN' ${OPENSHIFT_ML_FIRST_RUN} $env_dir
+
+mysql -u $OPENSHIFT_MYSQL_DB_USERNAME --password=$OPENSHIFT_MYSQL_DB_PASSWORD -h $OPENSHIFT_MYSQL_DB_HOST -P $OPENSHIFT_MYSQL_DB_PORT -D $OPENSHIFT_APP_NAME -e "CREATE SCHEMA mobilink; GRANT ALL ON mobilink.* to '${OPENSHIFT_ML_USERNAME}'@'%' IDENTIFIED BY '${OPENSHIFT_ML_PASSWORD}'; GRANT ALL ON ${OPENSHIFT_APP_NAME}.* TO '${OPENSHIFT_ML_USERNAME}'@'%'"
+
+mysql -u $OPENSHIFT_ML_USERNAME --password=$OPENSHIFT_ML_PASSWORD -h $OPENSHIFT_MYSQL_DB_HOST -P $OPENSHIFT_MYSQL_DB_PORT -D mobilink < $OPENSHIFT_ML_DIR/versions/16.0/mobilink/syncmys.sql
+
+
+cart_props "username=${OPENSHIFT_ML_USERNAME}"
+cart_props "password=${OPENSHIFT_ML_PASSWORD}"
+cart_props "database_name=${OPENSHIFT_ML_DB_NAME}"
+cart_props "mobilink_url=http://${OPENSHIFT_APP_DNS}/mobilink"
+
+
+set_app_info "Database Name: ${OPENSHIFT_ML_DB_NAME}; MobiLink User Name: ${OPENSHIFT_ML_USERNAME}; MobiLink User Password: ${OPENSHIFT_ML_PASSWORD}; MobiLink URL: http://${OPENSHIFT_APP_DNS}/mobilink"
+
+client_result "MobiLink 16.0 added. Please make note of these credentials:"
+client_result ""
+client_result "       MobiLink User: ${OPENSHIFT_ML_USERNAME}"
+client_result "   MobiLink Password: ${OPENSHIFT_ML_PASSWORD}"
+client_result "       Database Name: ${OPENSHIFT_ML_DB_NAME}"
+client_result ""
+client_result "MobiLink URL: http://${OPENSHIFT_APP_DNS}/mobilink"

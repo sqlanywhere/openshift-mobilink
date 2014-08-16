@@ -1,0 +1,18 @@
+---
+locked_files:
+- bin/
+- bin/*
+- env/
+- env/OPENSHIFT_ML_DB_NAME
+- env/OPENSHIFT_ML_LD_LIBRARY_PATH_ELEMENT
+- env/OPENSHIFT_ML_DIR
+- env/OPENSHIFT_ML_PASSWORD
+- env/OPENSHIFT_ML_PATH_ELEMENT
+- env/OPENSHIFT_ML_IDENT
+- env/OPENSHIFT_ML_USERNAME
+- metadata/
+- metadata/*
+- versions/
+- versions/*
+processed_templates:
+- '**/*.erb'
