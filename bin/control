@@ -7,7 +7,7 @@ env_dir="${OPENSHIFT_ML_DIR}/env"
 function check_license {
 # Display License File
 client_result "======= SAP License ========="
-while read -r line; do client_result "$line"; done < $OPENSHIFT_ML_DIR/license/license.txt
+while read -r line; do client_result "$line"; done < $OPENSHIFT_ML_DIR/EULA/EULA.txt
 client_result "==== End of SAP License ====="
 client_result ""
 client_result "======= MUST READ ==========="
