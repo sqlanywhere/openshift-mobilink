@@ -9,7 +9,7 @@ Description: "Synchronization between MySQL and remote databases using SAP SQL A
 Version: '16.0'
 Versions:
   - '16.0'
-Source-Url: git://github.com/efarrar/openshift-cartridge-sap-ml.git
+Source-Url: git://github.com/sqlanywhere/openshift-mobilink.git
 License: SAP Software License
 Vendor: SAP SE
 Categories:
